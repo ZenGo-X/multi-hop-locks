@@ -1,0 +1,37 @@
+[package]
+name = "sin-city"
+version = "0.1.0"
+authors = [
+    "Omer <omer.shlomovits@gmail.com>"
+]
+
+
+homepage = "https://github.com/KZen-networks/sin-city"
+repository = "https://github.com/KZen-networks/sin-city"
+license = "GPL-3.0-or-later"
+categories = ["cryptography"]
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+paillier = { git = "https://github.com/KZen-networks/rust-paillier"}
+zk-paillier = { git = "https://github.com/KZen-networks/zk-paillier"}
+
+
+hex = "0.3.2"
+subtle = {version = "2", features = ["nightly"]}
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+itertools = "0.7.8"
+
+[dependencies.curv]
+git = "https://github.com/KZen-networks/curv"
+features =  ["ec_secp256k1"]
+
+[dependencies.multi-party-ecdsa]
+git = "https://github.com/KZen-networks/multi-party-ecdsa"
+
+[patch.crates-io]
+rust-gmp = { version = "0.5.0", features = ["serde_support"], git = "https://github.com/KZen-networks/rust-gmp" }
