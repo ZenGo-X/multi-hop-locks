@@ -21,7 +21,7 @@ extern crate itertools;
 extern crate multi_party_ecdsa;
 extern crate paillier;
 
-mod test;
+mod tests;
 
 use curv::arithmetic::traits::Modulo;
 use curv::arithmetic::traits::Samplable;
