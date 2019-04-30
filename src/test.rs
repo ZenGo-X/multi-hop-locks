@@ -193,7 +193,7 @@ mod tests {
         MultiHopLock::verify_setup(&amhl.setup_chain[3]).expect("error");
         // U4 cannot be verified
 
-        // lock 1: (keygen is used without the zk proofs to make the test shorter)
+        ////////////// lock 1: (keygen is used without the zk proofs to make the test shorter) ////////////
         // party0 in Lock protocol plays party_one . party1 in Lock protocol plays party_two
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
         let secret_share_party_one: FE = ECScalar::from(&random_third);
@@ -290,7 +290,7 @@ mod tests {
             pk: pubkey_party_two,
         };
 
-        // lock2:
+        ////////////// lock2: ////////////
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
         let secret_share_party_one: FE = ECScalar::from(&random_third);
         let (party_one_first_message, comm_witness, ec_key_pair_party1) =
@@ -386,7 +386,7 @@ mod tests {
             pk: pubkey_party_two,
         };
 
-        // lock3:
+        ////////////// lock3: ////////////
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
         let secret_share_party_one: FE = ECScalar::from(&random_third);
         let (party_one_first_message, comm_witness, ec_key_pair_party1) =
@@ -482,7 +482,7 @@ mod tests {
             pk: pubkey_party_two,
         };
 
-        // lock4:
+        ////////////// lock4: ////////////
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
         let secret_share_party_one: FE = ECScalar::from(&random_third);
         let (party_one_first_message, comm_witness, ec_key_pair_party1) =
@@ -577,8 +577,8 @@ mod tests {
             w_1: s_tag_party1,
             pk: pubkey_party_two,
         };
-        // release lock 4: party U4 sends s_L_4 to party U3
-        // release lock 3:
+        //////////// release lock 4: party U4 sends s_L_4 to party U3 ////////////
+        //////////// release lock 3: ////////////
         let k_2 = Release::release_n_minus_1(
             &amhl.setup_chain[3],
             &amhl.setup_chain_link_u_n,
@@ -587,10 +587,10 @@ mod tests {
             &s_3_R,
         )
         .expect("error lock 3");
-        // release lock 2
+        ////////////// release lock 2 ////////////
         let k_1 =
             Release::release_i(&amhl.setup_chain[2], k_2, &s_2_L, &s_2_R).expect("error lock 2");
-        // release lock 1:
+        ////////////// release lock 1: ////////////
         let _k_0 =
             Release::release_i(&amhl.setup_chain[1], k_1, &s_1_L, &s_1_R).expect("error lock 2");
     }
