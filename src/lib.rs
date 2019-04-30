@@ -90,6 +90,29 @@ pub struct LockParty0Message2 {
     s_tag: FE,
 }
 
+pub struct SL {
+    w_0: FE,
+    w_1: FE,
+    pk: GE,
+}
+
+pub struct SR {
+    s_tag: FE,
+    message: FE,
+}
+
+pub struct K {
+    r: FE,
+    s: FE,
+}
+
+pub struct L {
+    m: FE,
+    pk: GE,
+}
+
+pub struct Release {} // TODO: consider adding session id
+
 impl MultiHopLock {
     pub fn setup(n: usize) -> MultiHopLock {
         let y_0: FE = ECScalar::new_random();
@@ -150,17 +173,14 @@ impl MultiHopLock {
 }
 
 impl LockParty1Message1 {
-    pub fn first_message(
-        chain_link1: &ChainLink,
-    ) -> (FE, DecommitLockParty1Message1, LockParty1Message1) {
+    pub fn first_message(Y_1_tag: &GE) -> (FE, DecommitLockParty1Message1, LockParty1Message1) {
         let g: GE = ECPoint::generator();
 
         let r_1: FE = ECScalar::new_random();
         let R_1 = g * &r_1;
 
-        let Y_1_tag: GE = chain_link1.Y_i_minus_1;
         let w = ECDDHWitness { x: r_1.clone() };
-        let R_1_tag = &Y_1_tag * &r_1;
+        let R_1_tag = Y_1_tag * &r_1;
         let delta = ECDDHStatement {
             g1: g.clone(),
             h1: R_1.clone(),
@@ -190,13 +210,12 @@ impl LockParty1Message1 {
 }
 
 impl LockParty0Message1 {
-    pub fn first_message(chain_link0: &ChainLink) -> (FE, LockParty0Message1) {
+    pub fn first_message(Y_0: &GE) -> (FE, LockParty0Message1) {
         let g: GE = ECPoint::generator();
         let r_0: FE = ECScalar::new_random();
         let R_0 = &g * &r_0;
-        let Y_0: GE = chain_link0.Y_i;
         let w = ECDDHWitness { x: r_0.clone() };
-        let R_0_tag = &Y_0 * &r_0;
+        let R_0_tag = Y_0 * &r_0;
         let delta = ECDDHStatement {
             g1: g.clone(),
             h1: R_0.clone(),
@@ -224,14 +243,14 @@ impl LockParty1Message2 {
         encrypted_secret_share: &BigInt,
         message: &BigInt,
         r_1: &FE,
-        chain_link1: &ChainLink,
+        Y_i_minus_1: &GE,
     ) -> LockParty1Message2 {
         // verify counter party NIZK:
         let g: GE = ECPoint::generator();
         let delta = ECDDHStatement {
             g1: g,
             h1: lock_party0_message1.R_0.clone(),
-            g2: chain_link1.Y_i_minus_1.clone(),
+            g2: Y_i_minus_1.clone(),
             h2: lock_party0_message1.R_0_tag.clone(),
         };
         ECDDHProof::verify(&lock_party0_message1.ddh_proof, &delta).expect("bad NIZK");
@@ -273,7 +292,7 @@ impl LockParty0Message2 {
         lock_party1_message1: LockParty1Message1,
         message: &BigInt,
         r_0: FE,
-        chain_link0: &ChainLink,
+        Y_i: &GE,
         pubkey: &GE,
     ) -> (FE, LockParty0Message2) {
         // verify commitment:
@@ -293,7 +312,7 @@ impl LockParty0Message2 {
         let delta = ECDDHStatement {
             g1: g,
             h1: lock_party1_message2.decomm.R_1.clone(),
-            g2: chain_link0.Y_i.clone(),
+            g2: Y_i.clone(),
             h2: lock_party1_message2.decomm.R_1_tag.clone(),
         };
         ECDDHProof::verify(&lock_party1_message2.decomm.ddh_proof, &delta).expect("bad NIZK");
@@ -324,7 +343,7 @@ impl LockParty0Message2 {
         r_1: &FE,
         pubkey: &GE,
         message: &BigInt,
-    ) -> FE {
+    ) -> (FE, FE) {
         let g: GE = ECPoint::generator();
         let R = lock_party0_message1.R_0_tag * r_1;
         let q = FE::q();
@@ -336,10 +355,144 @@ impl LockParty0Message2 {
         let e_g = g * e_fe;
 
         assert_eq!(s_tag_r_1_R_0, e_g + r_x_pk);
-        self.s_tag.clone()
+        (self.s_tag.clone(), r_x_fe)
     }
 }
 
 pub fn get_paillier_keys() -> (EncryptionKey, DecryptionKey) {
     Paillier::keypair().keys()
+}
+
+impl Release {
+    pub fn release_i(chain_i: &ChainLink, k_i_plus_1: K, s_L: &SL, s_R: &SR) -> Result<K, ()> {
+        let l = L {
+            m: s_R.message,
+            pk: s_L.pk,
+        };
+        let q = FE::q();
+        let s_inv = k_i_plus_1.s.invert();
+        let s_tag_div_s_inv = s_inv * s_R.s_tag;
+        let s_tag_div_s_inv_minus_y = s_tag_div_s_inv.sub(&chain_i.y_i.get_element());
+        let s_tag_div_s_inv_minus_y_inv = s_tag_div_s_inv_minus_y.invert();
+        let t = s_L.w_1 * s_tag_div_s_inv_minus_y_inv;
+        let t_bn = t.to_big_int();
+        let t_bn_neg = q.clone() - t_bn.clone();
+        let t_min_bn = BigInt::min(t_bn, t_bn_neg);
+        let t_min = ECScalar::from(&t_min_bn);
+
+        let k = K {
+            r: s_L.w_0.clone(),
+            s: t_min,
+        };
+        if vf(&l, &k).is_ok() {
+            return Ok(K {
+                r: FE::zero(),
+                s: k.s.clone(),
+            });
+        }
+
+        let s_tag_div_s_inv_bn = s_tag_div_s_inv.to_big_int();
+        let s_tag_div_s_inv_bn_neg = q.clone() - s_tag_div_s_inv_bn;
+        let s_tag_div_s_inv_neg: FE = ECScalar::from(&s_tag_div_s_inv_bn_neg);
+        let s_tag_div_s_inv_minus_y_neg = s_tag_div_s_inv_neg.sub(&chain_i.y_i.get_element());
+        let s_tag_div_s_inv_minus_y_inv_neg = s_tag_div_s_inv_minus_y_neg.invert();
+        let t_tag = s_L.w_1 * s_tag_div_s_inv_minus_y_inv_neg;
+        let t_tag_bn = t_tag.to_big_int();
+        let t_tag_bn_neg = q - t_tag_bn.clone();
+        let t_tag_min_bn = BigInt::min(t_tag_bn, t_tag_bn_neg);
+        let t_tag_min: FE = ECScalar::from(&t_tag_min_bn);
+
+        let k = K {
+            r: s_L.w_0.clone(),
+            s: t_tag_min,
+        };
+        match vf(&l, &k).is_ok() {
+            true => Ok(K {
+                r: FE::zero(),
+                s: k.s.clone(),
+            }),
+            false => Err(()),
+        }
+    }
+
+    pub fn release_n_minus_1(
+        chain_n_minus_1: &ChainLink,
+        chain_n: &ChainLinkUn,
+        s_L_n: &SL,
+        s_L_n_minus_1: &SL,
+        s_R: &SR,
+    ) -> Result<K, ()> {
+        let l = L {
+            m: s_R.message,
+            pk: s_L_n_minus_1.pk,
+        };
+        let q = FE::q();
+        let s = chain_n.k_n.invert() * s_L_n.w_1;
+        let s_inv = s.invert();
+        let s_tag_div_s_inv = s_inv * s_R.s_tag;
+        let s_tag_div_s_inv_minus_y = s_tag_div_s_inv.sub(&chain_n_minus_1.y_i.get_element());
+        let s_tag_div_s_inv_minus_y_inv = s_tag_div_s_inv_minus_y.invert();
+        let t = s_L_n_minus_1.w_1 * s_tag_div_s_inv_minus_y_inv;
+        let t_bn = t.to_big_int();
+        let t_bn_neg = q.clone() - t_bn.clone();
+        let t_min_bn = BigInt::min(t_bn.clone(), t_bn_neg.clone());
+        //  let t_min_be = t_bn_neg;
+        let t_min = ECScalar::from(&t_min_bn);
+
+        let k = K {
+            r: s_L_n.w_0.clone(),
+            s: s.clone(),
+        };
+        vf(&l, &k).is_ok();
+
+        let k = K {
+            r: s_L_n_minus_1.w_0.clone(),
+            s: t_min,
+        };
+        if vf(&l, &k).is_ok() {
+            return Ok(K {
+                r: FE::zero(),
+                s: k.s.clone(),
+            });
+        }
+
+        let s_tag_div_s_inv_bn = s_tag_div_s_inv.to_big_int();
+        let s_tag_div_s_inv_bn_neg = q.clone() - s_tag_div_s_inv_bn;
+        let s_tag_div_s_inv_neg: FE = ECScalar::from(&s_tag_div_s_inv_bn_neg);
+        let s_tag_div_s_inv_minus_y_neg =
+            s_tag_div_s_inv_neg.sub(&chain_n_minus_1.y_i.get_element());
+        let s_tag_div_s_inv_minus_y_inv_neg = s_tag_div_s_inv_minus_y_neg.invert();
+        let t_tag = s_L_n_minus_1.w_1 * s_tag_div_s_inv_minus_y_inv_neg;
+        let t_tag_bn = t_tag.to_big_int();
+        let t_tag_bn_neg = q - t_tag_bn.clone();
+        let t_tag_min_bn = BigInt::min(t_tag_bn, t_tag_bn_neg);
+        let t_tag_min: FE = ECScalar::from(&t_tag_min_bn);
+
+        let k = K {
+            r: s_L_n_minus_1.w_0.clone(),
+            s: t_tag_min,
+        };
+        match vf(&l, &k).is_ok() {
+            true => Ok(K {
+                r: FE::zero(),
+                s: k.s.clone(),
+            }),
+            false => Err(()),
+        }
+    }
+}
+
+pub fn vf(l: &L, k: &K) -> Result<(), ()> {
+    let q = FE::q();
+    let q_half = (q - BigInt::one()) / BigInt::from(2);
+    let g: GE = ECPoint::generator();
+    let s_inv = k.s.invert();
+    let m_s_inv_g = g * l.m * s_inv;
+    let r_s_inv_pk = l.pk * k.r * s_inv;
+    let rhs = m_s_inv_g + r_s_inv_pk;
+    if k.r.to_big_int() == rhs.x_coor().unwrap() && k.s.to_big_int() < q_half {
+        Ok(())
+    } else {
+        Err(())
+    }
 }
