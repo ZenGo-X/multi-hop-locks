@@ -1,5 +1,7 @@
 # sin-city
-Library for ECDSA based construction for Anonymous Multi-Hop Locks (https://eprint.iacr.org/2018/472.pdf). Use `Cargo test` to try it. Currently tests exists for :
+Library for ECDSA based construction for Anonymous Multi-Hop Locks (https://eprint.iacr.org/2018/472.pdf).
+>A novel cryptographic primitive that serves as a cornerstone for the design of secure and privacy-preserving payment channel networks
+Use `Cargo test` to try it. Currently tests exists for :
 1) Setup and verify setup
 2) Setup + Lock
 3) Setup + Lock + Release
