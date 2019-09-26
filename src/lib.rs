@@ -439,10 +439,6 @@ impl Release {
         //  let t_min_be = t_bn_neg;
         let t_min = ECScalar::from(&t_min_bn);
 
-        let k = K {
-            r: s_L_n.w_0.clone(),
-            s: s.clone(),
-        };
 
         let k = K {
             r: s_L_n_minus_1.w_0.clone(),
