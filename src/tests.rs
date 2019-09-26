@@ -119,7 +119,7 @@ mod tests {
             &party_two_pdl_second_message,
             party_one_private.clone(),
             pdl_decommit_party1,
-            alpha
+            alpha,
         )
         .expect("pdl error party2");
 

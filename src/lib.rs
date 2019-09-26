@@ -443,7 +443,6 @@ impl Release {
             r: s_L_n.w_0.clone(),
             s: s.clone(),
         };
-        vf(&l, &k).is_ok();
 
         let k = K {
             r: s_L_n_minus_1.w_0.clone(),
