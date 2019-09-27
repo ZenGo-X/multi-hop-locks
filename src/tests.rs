@@ -179,11 +179,13 @@ mod tests {
             lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
     }
 
-    fn generate_2p_address() -> (
-        curv::elliptic::curves::secp256_k1::Secp256k1Point,
-        curv::elliptic::curves::secp256_k1::Secp256k1Point,
-        curv::elliptic::curves::secp256_k1::Secp256k1Scalar,
-        multi_party_ecdsa::protocols::two_party_ecdsa::lindell_2017::party_two::PaillierPublic,
+    use curv::elliptic::curves::secp256_k1::*;
+
+    fn generate_2p_address_nozk() -> (
+        Secp256k1Point,
+        Secp256k1Point,
+        Secp256k1Scalar,
+        party_two::PaillierPublic,
         paillier::DecryptionKey,
     ) {
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
@@ -264,7 +266,7 @@ mod tests {
         ////////////// lock 1: (keygen is used without the zk proofs to make the test shorter) ////////////
         // party0 in Lock protocol plays party_one . party1 in Lock protocol plays party_two
         let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
-            generate_2p_address();
+            generate_2p_address_nozk();
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[1].Y_i_minus_1);
 
@@ -310,7 +312,7 @@ mod tests {
 
         ////////////// lock2: ////////////
         let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
-            generate_2p_address();
+            generate_2p_address_nozk();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[2].Y_i_minus_1);
@@ -357,7 +359,7 @@ mod tests {
 
         ////////////// lock3: ////////////
         let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
-            generate_2p_address();
+            generate_2p_address_nozk();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[3].Y_i_minus_1);
@@ -404,7 +406,7 @@ mod tests {
 
         ////////////// lock4: ////////////
         let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
-            generate_2p_address();
+            generate_2p_address_nozk();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain_link_u_n.Y_i_minus_1);
