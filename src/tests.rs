@@ -119,7 +119,7 @@ mod tests {
             &party_two_pdl_second_message,
             party_one_private.clone(),
             pdl_decommit_party1,
-            alpha
+            alpha,
         )
         .expect("pdl error party2");
 
@@ -179,22 +179,13 @@ mod tests {
             lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
     }
 
-    use Release;
-    use SL;
-    use SR;
-
-    #[test]
-    fn test_release() {
-        let n: usize = 5;
-        let amhl = MultiHopLock::setup(n);
-        MultiHopLock::verify_setup(&amhl.setup_chain[0]).expect("error");
-        MultiHopLock::verify_setup(&amhl.setup_chain[1]).expect("error");
-        MultiHopLock::verify_setup(&amhl.setup_chain[2]).expect("error");
-        MultiHopLock::verify_setup(&amhl.setup_chain[3]).expect("error");
-        // U4 cannot be verified
-
-        ////////////// lock 1: (keygen is used without the zk proofs to make the test shorter) ////////////
-        // party0 in Lock protocol plays party_one . party1 in Lock protocol plays party_two
+    fn generate_2p_address() -> (
+        curv::elliptic::curves::secp256_k1::Secp256k1Point,
+        curv::elliptic::curves::secp256_k1::Secp256k1Point,
+        curv::elliptic::curves::secp256_k1::Secp256k1Scalar,
+        multi_party_ecdsa::protocols::two_party_ecdsa::lindell_2017::party_two::PaillierPublic,
+        paillier::DecryptionKey,
+    ) {
         let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
         let secret_share_party_one: FE = ECScalar::from(&random_third);
         let (party_one_first_message, comm_witness, ec_key_pair_party1) =
@@ -247,6 +238,33 @@ mod tests {
             &party_one_second_message.comm_witness.public_share,
         );
 
+        return (
+            pubkey_party_one,
+            pubkey_party_two,
+            secret_share_party_two,
+            party_two_paillier,
+            dk,
+        );
+    }
+
+    use Release;
+    use SL;
+    use SR;
+
+    #[test]
+    fn test_release() {
+        let n: usize = 5;
+        let amhl = MultiHopLock::setup(n);
+        MultiHopLock::verify_setup(&amhl.setup_chain[0]).expect("error");
+        MultiHopLock::verify_setup(&amhl.setup_chain[1]).expect("error");
+        MultiHopLock::verify_setup(&amhl.setup_chain[2]).expect("error");
+        MultiHopLock::verify_setup(&amhl.setup_chain[3]).expect("error");
+        // U4 cannot be verified
+
+        ////////////// lock 1: (keygen is used without the zk proofs to make the test shorter) ////////////
+        // party0 in Lock protocol plays party_one . party1 in Lock protocol plays party_two
+        let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
+            generate_2p_address();
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[1].Y_i_minus_1);
 
@@ -291,57 +309,8 @@ mod tests {
         };
 
         ////////////// lock2: ////////////
-        let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
-        let secret_share_party_one: FE = ECScalar::from(&random_third);
-        let (party_one_first_message, comm_witness, ec_key_pair_party1) =
-            party_one::KeyGenFirstMsg::create_commitments_with_fixed_secret_share(
-                secret_share_party_one.clone(),
-            );
-
-        let secret_share_party_two: FE = ECScalar::new_random();
-        let (party_two_first_message, ec_key_pair_party2) =
-            party_two::KeyGenFirstMsg::create_with_fixed_secret_share(
-                secret_share_party_two.clone(),
-            );
-        let party_one_second_message = party_one::KeyGenSecondMsg::verify_and_decommit(
-            comm_witness,
-            &party_two_first_message.d_log_proof,
-        )
-        .expect("failed to verify and decommit");
-
-        let _party_two_second_message =
-            party_two::KeyGenSecondMsg::verify_commitments_and_dlog_proof(
-                &party_one_first_message,
-                &party_one_second_message,
-            )
-            .expect("failed to verify commitments and DLog proof");
-
-        // init paillier keypair:
-        let (ek, dk) = get_paillier_keys();
-        let paillier_key_pair =
-            party_one::PaillierKeyPair::generate_encrypted_share_from_fixed_paillier_keypair(
-                &ek,
-                &dk,
-                &ec_key_pair_party1,
-            );
-
-        let party_one_private =
-            party_one::Party1Private::set_private_key(&ec_key_pair_party1, &paillier_key_pair);
-
-        let party_two_paillier = party_two::PaillierPublic {
-            ek: paillier_key_pair.ek.clone(),
-            encrypted_secret_share: paillier_key_pair.encrypted_share.clone(),
-        };
-
-        //compute public key party_one:
-        let pubkey_party_one =
-            party_one::compute_pubkey(&party_one_private, &party_two_first_message.public_share);
-
-        //compute public key party_two:
-        let pubkey_party_two = party_two::compute_pubkey(
-            &ec_key_pair_party2,
-            &party_one_second_message.comm_witness.public_share,
-        );
+        let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
+            generate_2p_address();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[2].Y_i_minus_1);
@@ -387,57 +356,8 @@ mod tests {
         };
 
         ////////////// lock3: ////////////
-        let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
-        let secret_share_party_one: FE = ECScalar::from(&random_third);
-        let (party_one_first_message, comm_witness, ec_key_pair_party1) =
-            party_one::KeyGenFirstMsg::create_commitments_with_fixed_secret_share(
-                secret_share_party_one.clone(),
-            );
-
-        let secret_share_party_two: FE = ECScalar::new_random();
-        let (party_two_first_message, ec_key_pair_party2) =
-            party_two::KeyGenFirstMsg::create_with_fixed_secret_share(
-                secret_share_party_two.clone(),
-            );
-        let party_one_second_message = party_one::KeyGenSecondMsg::verify_and_decommit(
-            comm_witness,
-            &party_two_first_message.d_log_proof,
-        )
-        .expect("failed to verify and decommit");
-
-        let _party_two_second_message =
-            party_two::KeyGenSecondMsg::verify_commitments_and_dlog_proof(
-                &party_one_first_message,
-                &party_one_second_message,
-            )
-            .expect("failed to verify commitments and DLog proof");
-
-        // init paillier keypair:
-        let (ek, dk) = get_paillier_keys();
-        let paillier_key_pair =
-            party_one::PaillierKeyPair::generate_encrypted_share_from_fixed_paillier_keypair(
-                &ek,
-                &dk,
-                &ec_key_pair_party1,
-            );
-
-        let party_one_private =
-            party_one::Party1Private::set_private_key(&ec_key_pair_party1, &paillier_key_pair);
-
-        let party_two_paillier = party_two::PaillierPublic {
-            ek: paillier_key_pair.ek.clone(),
-            encrypted_secret_share: paillier_key_pair.encrypted_share.clone(),
-        };
-
-        //compute public key party_one:
-        let pubkey_party_one =
-            party_one::compute_pubkey(&party_one_private, &party_two_first_message.public_share);
-
-        //compute public key party_two:
-        let pubkey_party_two = party_two::compute_pubkey(
-            &ec_key_pair_party2,
-            &party_one_second_message.comm_witness.public_share,
-        );
+        let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
+            generate_2p_address();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain[3].Y_i_minus_1);
@@ -483,57 +403,8 @@ mod tests {
         };
 
         ////////////// lock4: ////////////
-        let random_third = BigInt::sample_below(&(FE::q() / BigInt::from(3)));
-        let secret_share_party_one: FE = ECScalar::from(&random_third);
-        let (party_one_first_message, comm_witness, ec_key_pair_party1) =
-            party_one::KeyGenFirstMsg::create_commitments_with_fixed_secret_share(
-                secret_share_party_one.clone(),
-            );
-
-        let secret_share_party_two: FE = ECScalar::new_random();
-        let (party_two_first_message, ec_key_pair_party2) =
-            party_two::KeyGenFirstMsg::create_with_fixed_secret_share(
-                secret_share_party_two.clone(),
-            );
-        let party_one_second_message = party_one::KeyGenSecondMsg::verify_and_decommit(
-            comm_witness,
-            &party_two_first_message.d_log_proof,
-        )
-        .expect("failed to verify and decommit");
-
-        let _party_two_second_message =
-            party_two::KeyGenSecondMsg::verify_commitments_and_dlog_proof(
-                &party_one_first_message,
-                &party_one_second_message,
-            )
-            .expect("failed to verify commitments and DLog proof");
-
-        // init paillier keypair:
-        let (ek, dk) = get_paillier_keys();
-        let paillier_key_pair =
-            party_one::PaillierKeyPair::generate_encrypted_share_from_fixed_paillier_keypair(
-                &ek,
-                &dk,
-                &ec_key_pair_party1,
-            );
-
-        let party_one_private =
-            party_one::Party1Private::set_private_key(&ec_key_pair_party1, &paillier_key_pair);
-
-        let party_two_paillier = party_two::PaillierPublic {
-            ek: paillier_key_pair.ek.clone(),
-            encrypted_secret_share: paillier_key_pair.encrypted_share.clone(),
-        };
-
-        //compute public key party_one:
-        let pubkey_party_one =
-            party_one::compute_pubkey(&party_one_private, &party_two_first_message.public_share);
-
-        //compute public key party_two:
-        let pubkey_party_two = party_two::compute_pubkey(
-            &ec_key_pair_party2,
-            &party_one_second_message.comm_witness.public_share,
-        );
+        let (pubkey_party_one, pubkey_party_two, secret_share_party_two, party_two_paillier, dk) =
+            generate_2p_address();
 
         let (r_1, decommit, lock_party1_message1) =
             LockParty1Message1::first_message(&amhl.setup_chain_link_u_n.Y_i_minus_1);
@@ -594,5 +465,4 @@ mod tests {
         let _k_0 =
             Release::release_i(&amhl.setup_chain[1], k_1, &s_1_L, &s_1_R).expect("error lock 2");
     }
-
 }
