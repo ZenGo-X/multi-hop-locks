@@ -1,13 +1,13 @@
 [package]
-name = "sin-city"
+name = "multi-hop-locks"
 version = "0.1.0"
 authors = [
     "Omer <omer.shlomovits@gmail.com>"
 ]
 
 
-homepage = "https://github.com/KZen-networks/sin-city"
-repository = "https://github.com/KZen-networks/sin-city"
+homepage = "https://github.com/KZen-networks/multi-hop-locks"
+repository = "https://github.com/KZen-networks/multi-hop-locks"
 license = "GPL-3.0-or-later"
 categories = ["cryptography"]
 
