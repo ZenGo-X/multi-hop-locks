@@ -15,8 +15,8 @@ categories = ["cryptography"]
 crate-type = ["lib"]
 
 [dependencies]
-paillier = { git = "https://github.com/KZen-networks/rust-paillier"}
-zk-paillier = { git = "https://github.com/KZen-networks/zk-paillier"}
+paillier = { git = "https://github.com/KZen-networks/rust-paillier", tag="v0.3.2"}
+zk-paillier = { git = "https://github.com/KZen-networks/zk-paillier", tag="v0.2.3"}
 
 
 hex = "0.3.2"
@@ -28,6 +28,7 @@ itertools = "0.7.8"
 
 [dependencies.curv]
 git = "https://github.com/KZen-networks/curv"
+tag = "v0.2.2"
 features =  ["ec_secp256k1"]
 
 [dependencies.multi-party-ecdsa]

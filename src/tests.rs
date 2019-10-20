@@ -273,7 +273,7 @@ mod tests {
         let (r_0, lock_party0_message1) =
             LockParty0Message1::first_message(&amhl.setup_chain[0].Y_i);
 
-        let message = BigInt::from(2);
+        let message1 = BigInt::from(2);
 
         let lock_party1_message2 = LockParty1Message2::second_message(
             &lock_party0_message1,
@@ -281,7 +281,7 @@ mod tests {
             &party_two_paillier.ek,
             &secret_share_party_two,
             &party_two_paillier.encrypted_secret_share,
-            &message,
+            &message1,
             &r_1,
             &amhl.setup_chain[1].Y_i_minus_1,
         );
@@ -290,7 +290,7 @@ mod tests {
             &dk,
             lock_party1_message2,
             lock_party1_message1,
-            &message,
+            &message1,
             r_0,
             &amhl.setup_chain[0].Y_i,
             &pubkey_party_one,
@@ -298,10 +298,10 @@ mod tests {
 
         // party1_output:
         let (s_tag_party1, r_x) =
-            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
+            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message1);
 
         let _s_0_R = SR {
-            message: ECScalar::from(&message),
+            message: ECScalar::from(&message1),
             s_tag: s_tag_party0,
         };
         let s_1_L = SL {
@@ -320,7 +320,7 @@ mod tests {
         let (r_0, lock_party0_message1) =
             LockParty0Message1::first_message(&amhl.setup_chain[1].Y_i);
 
-        let message = BigInt::from(2);
+        let message2 = BigInt::from(3);
 
         let lock_party1_message2 = LockParty1Message2::second_message(
             &lock_party0_message1,
@@ -328,7 +328,7 @@ mod tests {
             &party_two_paillier.ek,
             &secret_share_party_two,
             &party_two_paillier.encrypted_secret_share,
-            &message,
+            &message2,
             &r_1,
             &amhl.setup_chain[2].Y_i_minus_1,
         );
@@ -337,7 +337,7 @@ mod tests {
             &dk,
             lock_party1_message2,
             lock_party1_message1,
-            &message,
+            &message2,
             r_0,
             &amhl.setup_chain[1].Y_i,
             &pubkey_party_one,
@@ -345,10 +345,10 @@ mod tests {
 
         // party1_output:
         let (s_tag_party1, r_x) =
-            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
+            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message2);
 
         let s_1_R = SR {
-            message: ECScalar::from(&message),
+            message: ECScalar::from(&message1),
             s_tag: s_tag_party0,
         };
         let s_2_L = SL {
@@ -367,7 +367,7 @@ mod tests {
         let (r_0, lock_party0_message1) =
             LockParty0Message1::first_message(&amhl.setup_chain[2].Y_i);
 
-        let message = BigInt::from(2);
+        let message3 = BigInt::from(4);
 
         let lock_party1_message2 = LockParty1Message2::second_message(
             &lock_party0_message1,
@@ -375,7 +375,7 @@ mod tests {
             &party_two_paillier.ek,
             &secret_share_party_two,
             &party_two_paillier.encrypted_secret_share,
-            &message,
+            &message3,
             &r_1,
             &amhl.setup_chain[3].Y_i_minus_1,
         );
@@ -384,7 +384,7 @@ mod tests {
             &dk,
             lock_party1_message2,
             lock_party1_message1,
-            &message,
+            &message3,
             r_0,
             &amhl.setup_chain[2].Y_i,
             &pubkey_party_one,
@@ -392,10 +392,10 @@ mod tests {
 
         // party1_output:
         let (s_tag_party1, r_x) =
-            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
+            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message3);
 
         let s_2_R = SR {
-            message: ECScalar::from(&message),
+            message: ECScalar::from(&message2),
             s_tag: s_tag_party0,
         };
         let s_3_L = SL {
@@ -414,7 +414,7 @@ mod tests {
         let (r_0, lock_party0_message1) =
             LockParty0Message1::first_message(&amhl.setup_chain[3].Y_i);
 
-        let message = BigInt::from(2);
+        let message4 = BigInt::from(5);
 
         let lock_party1_message2 = LockParty1Message2::second_message(
             &lock_party0_message1,
@@ -422,7 +422,7 @@ mod tests {
             &party_two_paillier.ek,
             &secret_share_party_two,
             &party_two_paillier.encrypted_secret_share,
-            &message,
+            &message4,
             &r_1,
             &amhl.setup_chain_link_u_n.Y_i_minus_1,
         );
@@ -431,7 +431,7 @@ mod tests {
             &dk,
             lock_party1_message2,
             lock_party1_message1,
-            &message,
+            &message4,
             r_0,
             &amhl.setup_chain[3].Y_i,
             &pubkey_party_one,
@@ -439,10 +439,10 @@ mod tests {
 
         // party1_output:
         let (s_tag_party1, r_x) =
-            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message);
+            lock_party0_message2.verify(lock_party0_message1, &r_1, &pubkey_party_two, &message4);
 
         let s_3_R = SR {
-            message: ECScalar::from(&message),
+            message: ECScalar::from(&message3),
             s_tag: s_tag_party0,
         };
         let s_4_L = SL {

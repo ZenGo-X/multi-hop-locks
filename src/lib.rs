@@ -60,16 +60,19 @@ pub struct ChainLinkUn {
     pub k_n: FE,
 }
 
+#[derive(Clone)]
 pub struct LockParty0Message1 {
     ddh_proof: ECDDHProof,
     R_0: GE,
     R_0_tag: GE,
 }
 
+#[derive(Clone)]
 pub struct LockParty1Message1 {
     comm: BigInt,
 }
 
+#[derive(Clone)]
 pub struct DecommitLockParty1Message1 {
     blind_factor: BigInt,
     R_1: GE,
@@ -77,33 +80,39 @@ pub struct DecommitLockParty1Message1 {
     ddh_proof: ECDDHProof,
 }
 
+#[derive(Clone)]
 pub struct PartialSig {
     pub c_tag: BigInt,
 }
 
+#[derive(Clone)]
 pub struct LockParty1Message2 {
     decomm: DecommitLockParty1Message1,
     partial_sig: PartialSig,
 }
 
+#[derive(Clone)]
 pub struct LockParty0Message2 {
     s_tag: FE,
 }
 
+#[derive(Clone)]
 pub struct SL {
-    w_0: FE,
-    w_1: FE,
-    pk: GE,
+    pub w_0: FE,
+    pub w_1: FE,
+    pub pk: GE,
 }
 
+#[derive(Clone)]
 pub struct SR {
-    s_tag: FE,
-    message: FE,
+    pub s_tag: FE,
+    pub message: FE,
 }
 
+#[derive(Clone)]
 pub struct K {
     r: FE,
-    s: FE,
+    pub s: FE,
 }
 
 pub struct L {
