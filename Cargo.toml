@@ -15,8 +15,8 @@ categories = ["cryptography"]
 crate-type = ["lib"]
 
 [dependencies]
-paillier = { git = "https://github.com/KZen-networks/rust-paillier", tag="v0.3.2"}
-zk-paillier = { git = "https://github.com/KZen-networks/zk-paillier", tag="v0.2.3"}
+paillier = { git = "https://github.com/KZen-networks/rust-paillier", tag="v0.3.3"}
+zk-paillier = { git = "https://github.com/KZen-networks/zk-paillier", tag="v0.2.4"}
 
 
 hex = "0.3.2"
@@ -33,6 +33,7 @@ features =  ["ec_secp256k1"]
 
 [dependencies.multi-party-ecdsa]
 git = "https://github.com/KZen-networks/multi-party-ecdsa"
+tag = "v0.2.5"
 
 [patch.crates-io]
 rust-gmp = { version = "0.5.0", features = ["serde_support"], git = "https://github.com/KZen-networks/rust-gmp" }
