@@ -13,4 +13,4 @@ Use `Cargo test` to try it. Currently tests exists for :
 ![alt text](https://github.com/KZen-networks/sin-city/blob/master/res/protocol.png "ECDSA AMHL")
 
 ## Development Process:
-We use several methods for communication: you can open an issue, [reach out](mailto:github@kzencorp.com) or join the [KZR Telegram]( https://t.me/kzen_research) for discussions on code and research. Changes are accepted in the form of pull requests
+We use several methods for communication: you can open an issue, [reach out](mailto:github@kzencorp.com) or join the [KZR Telegram](https://t.me/joinchat/ET1mddGXRoyCxZ-7) for discussions on code and research. Changes are accepted in the form of pull requests
